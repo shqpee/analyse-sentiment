@@ -1,0 +1,83 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+wheels/
+*.spec
+
+# === Environnements virtuels ===
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# === Variables d'environnement (SECRETS) ===
+.env.local
+.env.production
+*.env
+
+# === Base de données ===
+*.db
+*.sqlite
+*.sqlite3
+database/avis.db
+
+# === Modèles IA (binaires lourds) ===
+# Le pipeline XGBoost léger (ml/models/*.joblib) EST versionné ; on n'exclut
+# que les gros formats de réseaux de neurones.
+*.bin
+*.safetensors
+*.onnx
+
+# === MLflow (suivi d'expériences) ===
+mlruns/
+mlartifacts/
+mlflow.db
+
+# === Jupyter ===
+# Les notebooks sont versionnés ; seuls les checkpoints auto sont ignorés.
+.ipynb_checkpoints/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+*.log
+logs/
+
+# === Tests ===
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# === Docker ===
+.dockerignore
+
+# === Node (si utilisé) ===
+node_modules/
+
+# === Données volumineuses (hors limite GitHub, à télécharger séparément) ===
+data/sample_reviews.csv
+data/raw_collected.csv
+*.rar
+*.bak
+
+# === Fichiers temporaires / divers ===
+database/test.txt
+
+# === MLflow pré-rempli versionné (git clone -> MLflow déjà rempli) ===
+!mlflow_store/mlflow.db

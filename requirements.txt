@@ -1,0 +1,42 @@
+# ============================================================
+# requirements.txt — Dépendances du projet
+# ============================================================
+# Installer avec : pip install -r requirements.txt
+
+# ── API et Web ──────────────────────────────────────────────
+fastapi==0.111.0          # Framework pour créer des API REST
+uvicorn[standard]==0.30.1 # Serveur ASGI pour lancer FastAPI
+pydantic==2.7.3           # Validation des données (intégré à FastAPI)
+
+# ── Interface utilisateur ───────────────────────────────────
+streamlit==1.35.0         # Framework pour créer l'application web
+requests==2.32.3          # Pour appeler les APIs depuis Streamlit
+
+# ── Monitoring (Prometheus / Grafana) ───────────────────────
+prometheus-fastapi-instrumentator==7.0.0  # Expose /metrics sur les APIs FastAPI
+
+# ── Intelligence Artificielle ────────────────────────────────
+transformers==4.41.2      # Modèles HuggingFace (BERT, DistilBERT...)
+torch==2.3.1              # PyTorch : moteur de calcul des réseaux de neurones
+scikit-learn==1.5.0       # Pipelines TF-IDF, métriques, GridSearchCV, learning curve
+xgboost==2.0.3            # Gradient boosting (modèle de classification XGBoost)
+mlflow==2.14.1            # Suivi des expérimentations ML (params, métriques, modèles)
+
+# ── Données et Base de données ───────────────────────────────
+pandas==2.2.2             # Manipulation de données (DataFrames)
+numpy==1.26.4             # Calcul numérique
+deep-translator==1.11.4   # Traduction EN→FR du jeu de données (notebook XGBoost)
+
+# ── Web Scraping ─────────────────────────────────────────────
+beautifulsoup4==4.12.3    # Parser HTML pour le scraping
+lxml==5.2.2               # Parser XML/HTML (plus rapide que html.parser)
+
+# ── Tests ────────────────────────────────────────────────────
+pytest==8.2.2             # Framework de tests
+pytest-cov==5.0.0         # Couverture de code
+httpx==0.27.0             # Client HTTP pour les tests FastAPI (TestClient)
+
+# ── Utilitaires ──────────────────────────────────────────────
+python-multipart==0.0.9   # Pour les formulaires dans FastAPI
+aiofiles==23.2.1          # Lecture/écriture de fichiers asynchrone
+setuptools<81             # Fournit pkg_resources requis par mlflow (retiré dans setuptools>=81)
