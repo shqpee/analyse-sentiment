@@ -1,0 +1,26 @@
+id,source,texte,produit,note,date,auteur_pseudo
+1,amazon,"Ce produit est absolument fantastique, je recommande vivement !",Casque Bluetooth,5,2024-01-15,user_42
+2,amazon,"Très déçu, le casque est tombé en panne après 2 semaines.",Casque Bluetooth,1,2024-01-20,user_71
+3,amazon,"Bon rapport qualité-prix, livraison rapide.",Casque Bluetooth,4,2024-01-22,user_13
+4,amazon,"Qualité médiocre, ne vaut pas son prix.",Casque Bluetooth,2,2024-02-01,user_58
+5,amazon,"Parfait ! Son excellent et confortable à porter.",Casque Bluetooth,5,2024-02-05,user_99
+6,fnac,"Produit conforme à la description, rien à redire.",Montre Connectée,3,2024-02-10,user_27
+7,fnac,"Incroyable montre, toutes les fonctions marchent parfaitement.",Montre Connectée,5,2024-02-14,user_64
+8,fnac,"La batterie ne tient pas une journée, très décevant.",Montre Connectée,1,2024-02-18,user_31
+9,fnac,"Bonne montre pour le prix, quelques bugs mineurs.",Montre Connectée,3,2024-02-25,user_87
+10,fnac,"Service après-vente excellent, problème résolu rapidement.",Montre Connectée,4,2024-03-01,user_52
+11,amazon,"Excellent appareil photo, photos très nettes.",Appareil Photo,5,2024-03-05,user_11
+12,amazon,"Trop compliqué à utiliser, notice incompréhensible.",Appareil Photo,2,2024-03-10,user_76
+13,amazon,"Bonne qualité mais prix un peu élevé.",Appareil Photo,3,2024-03-15,user_43
+14,fnac,"Je suis ravi de cet achat, le meilleur de sa gamme !",Appareil Photo,5,2024-03-20,user_88
+15,fnac,"Déçu par la qualité des photos en intérieur.",Appareil Photo,2,2024-03-25,user_19
+16,amazon,"Enceinte avec un son puissant, très satisfait.",Enceinte Portable,5,2024-04-01,user_35
+17,amazon,"L'enceinte grésille à fort volume, problème de fabrication.",Enceinte Portable,1,2024-04-05,user_62
+18,amazon,"Son correct pour l'usage courant.",Enceinte Portable,3,2024-04-10,user_47
+19,fnac,"Excellente enceinte, autonomie remarquable.",Enceinte Portable,5,2024-04-15,user_23
+20,fnac,"Produit moyen, rien de particulier à signaler.",Enceinte Portable,3,2024-04-20,user_90
+21,amazon,"Tablette fluide et réactive, très bien pour les enfants.",Tablette,4,2024-05-01,user_06
+22,amazon,"Écran trop sombre, difficile à utiliser en extérieur.",Tablette,2,2024-05-05,user_78
+23,amazon,"Super tablette, parfaite pour regarder des films.",Tablette,5,2024-05-10,user_44
+24,fnac,"Rapport qualité-prix imbattable, je recommande.",Tablette,4,2024-05-15,user_33
+25,fnac,"Lente et peu de stockage, très décevante.",Tablette,1,2024-05-20,user_67
