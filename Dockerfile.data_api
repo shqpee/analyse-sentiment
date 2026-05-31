@@ -1,0 +1,20 @@
+# ============================================================
+# Dockerfile.data_api — Image Docker pour l'API Données
+# ============================================================
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Dépendances minimales (FastAPI + SQLite) → build léger, pas de PyTorch
+COPY requirements-data.txt .
+RUN pip install --no-cache-dir -r requirements-data.txt
+
+COPY . .
+
+# Initialiser la base de données au démarrage
+RUN python database/init_db.py || true
+
+EXPOSE 8001
+
+CMD ["uvicorn", "api_data.main:app", "--host", "0.0.0.0", "--port", "8001"]
