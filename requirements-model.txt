@@ -1,0 +1,17 @@
+# ============================================================
+# requirements-model.txt — Dépendances de l'API Modèle IA UNIQUEMENT
+# ============================================================
+# L'API sert le pipeline XGBoost (TF-IDF) entraîné en français
+# (ml/models/xgboost_sentiment.joblib). Pas de torch/transformers :
+# le modèle est léger et tourne sur CPU pur.
+# Versions alignées sur l'environnement d'entraînement pour que le
+# .joblib se recharge sans avertissement d'incompatibilité.
+
+fastapi==0.111.0          # Framework API REST
+uvicorn[standard]==0.30.1 # Serveur ASGI
+pydantic==2.7.3           # Validation des données
+scikit-learn==1.5.0       # Pipeline TF-IDF (chargement du modèle)
+xgboost==2.0.3            # Classifieur XGBoost (chargement du modèle)
+joblib==1.5.3             # Désérialisation du pipeline .joblib
+numpy==1.26.4             # Dépendance numérique de sklearn/xgboost
+prometheus-fastapi-instrumentator==7.0.0  # Métriques Prometheus (/metrics)

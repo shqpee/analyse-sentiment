@@ -1,0 +1,30 @@
+# ============================================================
+# Dockerfile.model_api — Image Docker pour l'API Modèle IA
+# ============================================================
+# Ce fichier décrit comment "empaqueter" l'API dans un conteneur Docker.
+# Un conteneur est une boîte autonome qui contient le code + ses dépendances.
+#
+# L'API sert le pipeline XGBoost (TF-IDF) entraîné en français
+# (ml/models/xgboost_sentiment.joblib). Pas besoin de PyTorch ni de
+# transformers : build beaucoup plus léger et rapide qu'avant.
+
+# Image de base : Python 3.11 léger (slim = version sans outils inutiles)
+FROM python:3.11-slim
+
+# Définir le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Copier les fichiers de dépendances en premier (optimisation du cache Docker)
+COPY requirements-model.txt .
+
+# Installer les dépendances de l'API modèle (FastAPI, scikit-learn, xgboost...)
+RUN pip install --no-cache-dir -r requirements-model.txt
+
+# Copier tout le code source (inclut ml/models/xgboost_sentiment.joblib)
+COPY . .
+
+# Exposer le port 8000 (l'API modèle tourne sur ce port)
+EXPOSE 8000
+
+# Commande de lancement de l'API
+CMD ["uvicorn", "api_model.main:app", "--host", "0.0.0.0", "--port", "8000"]
