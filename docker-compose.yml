@@ -1,0 +1,159 @@
+# ============================================================
+# docker-compose.yml — Orchestration de tous les services
+# ============================================================
+# docker-compose permet de lancer plusieurs conteneurs ensemble
+# avec une seule commande : docker-compose up
+#
+# Services :
+#   - api_modele  : API IA sur http://localhost:8000
+#   - api_donnees : API Données sur http://localhost:8001
+#   - app         : Frontend Streamlit sur http://localhost:8501
+# ============================================================
+
+services:
+  # ──────────────────────────────────
+  # Service 1 : API Modèle IA
+  # ──────────────────────────────────
+  api_modele:
+    build:
+      context: .
+      dockerfile: Dockerfile.model_api
+    container_name: avis-api-modele
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      # Partager la BDD entre les conteneurs
+      - ./database:/app/database
+      # Cache du modèle HuggingFace (éviter de re-télécharger)
+      - modele_cache:/root/.cache/huggingface
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ──────────────────────────────────
+  # Service 2 : API Données
+  # ──────────────────────────────────
+  api_donnees:
+    build:
+      context: .
+      dockerfile: Dockerfile.data_api
+    container_name: avis-api-donnees
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./database:/app/database
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ──────────────────────────────────
+  # Service 3 : Frontend Streamlit
+  # ──────────────────────────────────
+  app:
+    image: python:3.11-slim
+    container_name: avis-frontend
+    working_dir: /app
+    command: >
+      bash -c "pip install streamlit requests pandas &&
+               streamlit run app/main.py --server.port=8501 --server.address=0.0.0.0"
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    environment:
+      - API_MODELE_URL=http://api_modele:8000
+      - API_DONNEES_URL=http://api_donnees:8001
+    depends_on:
+      - api_modele
+      - api_donnees
+    restart: unless-stopped
+
+  # ──────────────────────────────────
+  # Service 4 : Prometheus (collecte des métriques)
+  # ──────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: avis-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      # Fichier de configuration des cibles à scraper
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # Stockage persistant des séries temporelles
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - api_modele
+      - api_donnees
+    restart: unless-stopped
+
+  # ──────────────────────────────────
+  # Service 5 : Grafana (dashboards de visualisation)
+  # ──────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: avis-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Identifiants admin par défaut (à changer en production)
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      # Provisioning automatique : source de données + dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      # Stockage persistant de Grafana (préférences, etc.)
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ──────────────────────────────────
+  # Service 6 : MLflow (serveur de tracking + UI sur http://localhost:5000)
+  # ──────────────────────────────────
+  # Mode "serveur" (et non un simple `mlflow ui`) pour que les ARTEFACTS
+  # (learning curve, classification report, modèle...) soient stockés et
+  # servis par le conteneur (--serve-artifacts), sans dépendre de chemins
+  # absolus de la machine hôte. L'entraînement loggue dedans via
+  # MLFLOW_TRACKING_URI=http://localhost:5000 (voir entrainer_et_grafana.bat).
+  #
+  # MLflow est installé UNE FOIS dans l'image (Dockerfile.mlflow), au lieu d'un
+  # `pip install` à chaque démarrage : le conteneur redémarre en quelques
+  # secondes. La commande du serveur est définie dans le Dockerfile.
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: avis-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      # Base de tracking + artefacts VERSIONNÉS dans le repo (mlflow_store/).
+      # Conséquence : un `git clone` + `docker compose up` => MLflow déjà rempli,
+      # sans devoir relancer l'entraînement.
+      - ./mlflow_store:/mlflow
+    restart: unless-stopped
+
+# ──────────────────────────────────
+# Volumes persistants
+# ──────────────────────────────────
+volumes:
+  modele_cache:    # Cache du modèle HuggingFace
+  prometheus_data: # Base de séries temporelles Prometheus
+  grafana_data:    # Données Grafana (dashboards sauvegardés, préférences)
+  # MLflow n'utilise plus de volume anonyme : ses données sont versionnées
+  # dans ./mlflow_store (bind-mount) pour être livrées avec le dépôt.

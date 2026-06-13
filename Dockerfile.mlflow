@@ -1,0 +1,21 @@
+# ============================================================
+# Dockerfile.mlflow — Image du serveur MLflow (tracking + UI)
+# ============================================================
+# MLflow est installé UNE SEULE FOIS dans l'image (pas à chaque démarrage du
+# conteneur). Résultat : le service redémarre en quelques secondes au lieu de
+# réinstaller ~80 paquets via pip à chaque `docker compose up`.
+
+FROM python:3.11-slim
+
+# Dépendances du serveur MLflow (backend SQLite + service d'artefacts)
+RUN pip install --no-cache-dir mlflow==2.14.1
+
+WORKDIR /mlflow
+EXPOSE 5000
+
+# Serveur MLflow : UI + API de tracking, sert aussi les artefacts.
+CMD ["mlflow", "server", \
+     "--host", "0.0.0.0", "--port", "5000", \
+     "--backend-store-uri", "sqlite:////mlflow/mlflow.db", \
+     "--artifacts-destination", "/mlflow/artifacts", \
+     "--serve-artifacts"]
