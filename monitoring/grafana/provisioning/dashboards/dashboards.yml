@@ -1,0 +1,17 @@
+# ============================================================
+# dashboards.yml — Chargement automatique des dashboards Grafana
+# ============================================================
+# Grafana charge tous les fichiers .json présents dans le dossier
+# /var/lib/grafana/dashboards au démarrage.
+
+apiVersion: 1
+
+providers:
+  - name: "avis-sentiment"
+    orgId: 1
+    folder: "Avis Sentiment"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

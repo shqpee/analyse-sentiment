@@ -1,0 +1,31 @@
+# ============================================================
+# prometheus.yml — Configuration de collecte des métriques
+# ============================================================
+# Prometheus interroge ("scrape") périodiquement l'endpoint /metrics
+# de chaque API pour stocker les séries temporelles (requêtes, latence...).
+
+global:
+  scrape_interval: 15s       # Fréquence de collecte des métriques
+  evaluation_interval: 15s   # Fréquence d'évaluation des règles d'alerte
+
+scrape_configs:
+  # API Modèle IA (FastAPI, port 8000)
+  - job_name: "api_modele"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api_modele:8000"]
+        labels:
+          service: "api_modele"
+
+  # API Données (FastAPI, port 8001)
+  - job_name: "api_donnees"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api_donnees:8001"]
+        labels:
+          service: "api_donnees"
+
+  # Prometheus se surveille lui-même
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

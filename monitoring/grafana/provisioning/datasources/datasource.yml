@@ -1,0 +1,16 @@
+# ============================================================
+# datasource.yml — Source de données Grafana (auto-provisionnée)
+# ============================================================
+# Au démarrage, Grafana connecte automatiquement Prometheus :
+# aucune configuration manuelle dans l'interface n'est nécessaire.
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
