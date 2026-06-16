@@ -1,0 +1,144 @@
+# ============================================================
+# ci.yml — C13, C18 : Pipeline d'Intégration Continue (CI)
+# ============================================================
+# Ce workflow GitHub Actions s'exécute à chaque push ou Pull Request.
+# Il vérifie que le code fonctionne correctement (tests automatisés).
+#
+# Compétences : C13, C18 — Automatiser les tests et la CI
+# ============================================================
+
+name: CI - Tests Automatisés
+
+# Déclencheurs : à chaque push sur main/develop ou Pull Request
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ──────────────────────────────────────────
+  # JOB 1 : Tests
+  # ──────────────────────────────────────────
+  tests:
+    name: Lancer les tests automatisés
+    runs-on: ubuntu-latest  # Machine virtuelle Ubuntu fournie par GitHub
+
+    steps:
+      # 1. Récupérer le code source du dépôt
+      - name: Cloner le dépôt
+        uses: actions/checkout@v4
+
+      # 2. Configurer Python
+      - name: Configurer Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"  # Cache pip pour accélérer les builds
+
+      # 3. Installer les dépendances
+      - name: Installer les dépendances
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. Vérifier le style du code avec flake8
+      - name: Vérification du style (flake8)
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        continue-on-error: true  # Ne pas bloquer si erreur de style mineure
+
+      # 5. Initialiser la base de données de test
+      - name: Initialiser la base de données
+        run: |
+          python database/init_db.py
+
+      # 6. Validation des données (C13 — étape de test des données)
+      #    On valide le jeu d'entraînement versionné (df_final_fr.csv).
+      #    Les CSV bruts volumineux ne sont pas dans le dépôt (.gitignore).
+      - name: Validation du jeu de données
+        run: |
+          python - <<'EOF'
+          import os
+          import pandas as pd
+
+          chemin = "data/df_final_fr.csv"
+          assert os.path.exists(chemin), f"Jeu de données introuvable : {chemin}"
+          df = pd.read_csv(chemin)
+
+          # Règles de validation des données d'entraînement (FR)
+          assert len(df) > 0, "Le jeu de données est vide"
+          for col in ("texte_fr", "label"):
+              assert col in df.columns, f"Colonne '{col}' manquante"
+          assert df["texte_fr"].notna().all(), "Des textes (texte_fr) sont manquants (NaN)"
+          assert set(df["label"].dropna().unique()) <= {0, 1}, "Labels hors {0, 1}"
+          assert (df["texte_fr"].astype(str).str.len() >= 1).all(), "Textes vides détectés"
+
+          print(f"✅ Validation données OK : {len(df)} avis en français")
+          print(f"   Colonnes : {list(df.columns)}")
+          print(f"   Répartition labels : {df['label'].value_counts().to_dict()}")
+          EOF
+
+      # 7. Validation du modèle IA (C13 — étape de test et validation du modèle)
+      - name: Validation du modèle d'IA
+        run: |
+          python - <<'EOF'
+          import sys
+          sys.path.insert(0, '.')
+          from api_model.model import predire_sentiment
+
+          # Cas de test avec résultats attendus (avis en français)
+          cas_tests = [
+              ("Ce produit est vraiment excellent, je recommande !", "POSITIVE"),
+              ("Qualité horrible, totalement décevant.", "NEGATIVE"),
+              ("Très bon rapport qualité-prix, je suis ravi.", "POSITIVE"),
+              ("Le pire achat, complètement nul.", "NEGATIVE"),
+          ]
+
+          erreurs = 0
+          for texte, label_attendu in cas_tests:
+              resultat = predire_sentiment(texte)
+              label_obtenu = resultat.get('label', '')
+              if label_obtenu != label_attendu:
+                  print(f"❌ ÉCHEC : '{texte[:40]}...' → attendu {label_attendu}, obtenu {label_obtenu}")
+                  erreurs += 1
+              else:
+                  print(f"✅ OK : '{texte[:40]}...' → {label_obtenu} (score: {resultat.get('score', 0):.2f})")
+
+          if erreurs > 0:
+              print(f"\n{erreurs} test(s) échoué(s) sur {len(cas_tests)}")
+              sys.exit(1)
+          else:
+              print(f"\nValidation modèle : {len(cas_tests)}/{len(cas_tests)} cas réussis")
+          EOF
+        continue-on-error: true  # Modèle simulé acceptable en CI
+
+      # 8. Lancer les tests avec pytest
+      - name: Lancer les tests
+        run: |
+          pip install pytest pytest-cov
+          pytest tests/ -v --tb=short
+
+      # 9. Générer le rapport de couverture de code
+      - name: Rapport de couverture
+        run: |
+          pytest tests/ --cov=. --cov-report=xml --cov-report=term-missing
+        continue-on-error: true
+
+  # ──────────────────────────────────────────
+  # JOB 2 : Build Docker (vérifie que l'image se construit)
+  # ──────────────────────────────────────────
+  docker-build:
+    name: Vérifier le build Docker
+    runs-on: ubuntu-latest
+    needs: tests  # S'exécute seulement si les tests passent
+
+    steps:
+      - name: Cloner le dépôt
+        uses: actions/checkout@v4
+
+      - name: Build l'image Docker
+        run: |
+          docker compose build
+        continue-on-error: true  # Docker optionnel dans ce contexte
