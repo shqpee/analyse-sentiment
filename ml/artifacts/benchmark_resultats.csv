@@ -1,0 +1,4 @@
+modele,type,statut,ms_par_avis,accuracy,precision,recall,f1,roc_auc
+XGBoost (FR),tfidf+xgboost,OK,1.31,0.84,0.831,0.831,0.831,0.9174
+nlptown-multilingual,bert-multilingue,OK,793.84,0.8767,0.9487,0.7817,0.8571,0.9491
+distilbert-sst2-en (ancien),bert-anglais,OK,679.02,0.61,0.766,0.2535,0.381,0.6486
